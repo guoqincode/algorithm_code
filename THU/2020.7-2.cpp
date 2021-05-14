@@ -187,7 +187,19 @@ inline void op_d(int x,int off,int y){
     }
 
     //空间清理
-    
+    //删除的是中间的那一部分，所以我们可以先把中间那一部分删除，然后求出还能留下多少块，留下前面的那些块
+    string temp=fILE[x].s.substr(0,off);
+    //跳过off+y个
+    temp+=fILE[x].s.substr(off+y);
+    fILE[x].s=temp;
+    int need_blocks=temp.size()/b;
+    if(temp.size()%b) need_blocks++;
+    while(fILE[x].index_of_blocks.size()>need_blocks){
+            int temp=fILE[x].index_of_blocks[fILE[x].index_of_blocks.size()-1];
+            fILE[x].index_of_blocks.pop_back();
+            is_used[temp]=0;
+    }
+    return;
 }
 
 int main(){
