@@ -1,0 +1,29 @@
+2 6 28 3
+A 1 2 aAbB
+B 1
+C 1 0 4
+C 1 2 2
+C 1 2 3
+A 1 2 cCdDeEfFgGhHiIjJkK
+B 1
+C 1 0 18
+C 1 2 8
+A 2 0 lL
+B 2
+C 2 0 1
+D 1 4 12
+B 1
+C 1 0 18
+C 1 0 6
+A 2 0 lL
+B 2
+C 2 0 1
+D 2 2 20
+B 2
+C 2 0 1
+C 2 0 2
+D 2 1 20
+B 2
+C 2 0 2
+C 2 0 1
+C 2 100 1
