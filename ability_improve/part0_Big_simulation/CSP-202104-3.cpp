@@ -99,9 +99,9 @@ int main(){
                     //3.设置过期时刻，详见题目
                     if(T_cur==0) IP[select_ip].expired_time=t+Tdef;
                     else{
-                        if(T_cur<Tmin) T_cur=Tmin;
-                        if(T_cur>Tmax) T_cur=Tmax;
-                        IP[select_ip].expired_time=t+T_cur;
+                        if(T_cur<Tmin+t) T_cur=Tmin+t;
+                        if(T_cur>Tmax+t) T_cur=Tmax+t;
+                        IP[select_ip].expired_time=T_cur;
                     }
 
                     //4.向主机发送offer报文，ip、过期时刻
@@ -135,9 +135,9 @@ int main(){
                         //4.与 Discover 报文相同的方法，设置 IP 地址的过期时刻；
                         if(T_cur==0) IP[ip_cur].expired_time=t+Tdef;
                         else{
-                            if(T_cur<Tmin) T_cur=Tmin;
-                            if(T_cur>Tmax) T_cur=Tmax;
-                            IP[ip_cur].expired_time=t+T_cur;
+                            if(T_cur<Tmin+t) T_cur=Tmin+t;
+                            if(T_cur>Tmax+t) T_cur=Tmax+t;
+                            IP[ip_cur].expired_time=T_cur;
                         }
  
                         //5.向发送主机发送 Ack 报文
@@ -177,9 +177,9 @@ int main(){
                 //4.与 Discover 报文相同的方法，设置 IP 地址的过期时刻；
                 if(T_cur==0) IP[ip_cur].expired_time=t+Tdef;
                 else{
-                    if(T_cur<Tmin) T_cur=Tmin;
-                    if(T_cur>Tmax) T_cur=Tmax;
-                    IP[ip_cur].expired_time=t+T_cur;
+                    if(T_cur<Tmin+t) T_cur=Tmin+t;
+                    if(T_cur>Tmax+t) T_cur=Tmax+t;
+                    IP[ip_cur].expired_time=T_cur;
                 }
  
                 //5.向发送主机发送 Ack 报文
