@@ -1,197 +1,106 @@
-//DHCP服务器
+// 生成树计数
+// 对于情况1  m<=18的话 可以用暴力骗13'
+// 对于情况2  m=n-1的话 要么是0 要么是1 因为生成树的边数就是n-1 
+// 感觉情况2最简单 可以放到一开始来判断
+
+//感觉是做出来了的 时间空间复杂度都不高  苦于无测试数据
+//mark 考虑的太单纯了
+
+
 #include<bits/stdc++.h>
 using namespace std;
-int size_of_pool,Tdef,Tmax,Tmin,size_of_command;
-const int max_size_of_pool=10010;
-string Server;  //服务器的名称
-string all="*";
-string REQ="REQ";
-string DIS="DIS";
-struct I_and_P{
-    //初始化
-    //所有ip地址状态为未分配，占用者为空，过期时刻请0
-    //地址的状态有 未分配、待分配、占用、过期 四种。处于未分配状态的 IP 地址没有占用者，而其余三种状态的 IP 地址均有一名占用者
-    //处于待分配和占用的ip有一个大于0的过期时刻。到达过期时刻时，若为待分配则变为未分配，占用者清0，过期时刻清0，否则占用->过期，过期时刻清0
-    int stage;  //0未分配 1待分配 2占用 3过期 
-    int is_belong;  //目前的占用者
-    int expired_time;   //过期时刻
-}IP[max_size_of_pool];
+#define ll long long
+const int maxn=1e5+5;
+const int maxm=4e5+5;
+const ll mod=998244353;
+int n,m;
 
-map<string,int>m;   //用来将字符串映射成一个整数
-int tot=0;
-int have[max_size_of_pool]; //have[i]为第i个主机占用的ip的地址
+struct Edge{
+    int x,y;
+}edge[maxm];
 
-int return_ip(){
-    //若没有，则选取最小的状态为未分配的 IP 地址；
-    //若没有，则选取最小的状态为过期的 IP 地址；
-    //若没有，则不处理该报文，处理结束；
-    for(int i=1;i<=size_of_pool;i++){
-        if(IP[i].stage==0) return i;
-    }
-    for(int i=1;i<=size_of_pool;i++){
-        if(IP[i].stage==3) return i;
-    }
-    return -1;
+int father[maxn];
+inline int find_father(int x){
+    if(x==father[x]) return x;
+    else return father[x]=find_father(father[x]);
 }
 
-// DHCP 数据报文格式 <发送主机> <接收主机> <报文类型> <IP 地址> <过期时刻>
-// 发送主机 ~   接收主机 接收报文的主机名 or *
-// 报文类型  DIS OFR REQ ACK NAK
-// IP       对于DIS来说，发送为0，接收时候忽略  对其他报文来说是一个正整数
-// 过期时刻  对于OFR、ACK是一个正整数，表示服务器授予客户端ip的过期时刻
-//           对于DIS、REQ来说，若为正正整数表示客户端期望的过期时间   对于其他报文，发送时为0 接受时忽略
+map<pair<int,int>,ll>mm;     //注意一下map和make_pair(x,y)的使用  85-89行
 
-//DHCP服务器配置    地址池大小N   默认过期时间Tdef、过期时间的上限Tmax和下限Tmin  本机名称H
-
-//分配策略   一个单独的函数实现如下要求:
-//1.首先检查此前是否给该客户端分配过ip，且该ip之后没有分配给别人，否则
-//2.分配给他最小的尚未  占用过(新的)  ip，否则
-//3.分配给他 此时未被占用的IP，如果没有，则拒绝分配
-
+ll ans=1;
 int main(){
-    cin>>size_of_pool>>Tdef>>Tmax>>Tmin>>Server>>size_of_command;
-    while(size_of_command--){
-        //client只能向server发送DIS和REQ
-        int t,ip_cur,T_cur;
-        string from,to,comm;
-        cin>>t>>from>>to>>comm>>ip_cur>>T_cur;
-        if(from==all||from==Server) continue;
-        if(m[from]==0){
-            //之前没有记录过这个主机
-            tot++;
-            m[from]=tot;
-        }
-        int from_int=m[from];
-        //对于收到的报文
-        //1.判断接收主机是否为本机，或者为 *，若不是，则判断类型是否为 Request，若不是，则不处理；
-        //2.若类型不是 Discover、Request 之一，则不处理；
-        //3.若接收主机为 *，但类型不是 Discover，或接收主机是本机(客户端本身?)，但类型是 Discover，则不处理。
-        if(to==all||to==Server){
-
-            if(comm==REQ||comm==DIS){
-                if(to==all&&comm!=DIS) continue;
-                if(to==Server&&comm==DIS) continue;
-                //排除掉了所有不处理的情况
-                if(comm==DIS){
-                    //向所有的服务器发送DIS报文的情况
-
-                    //对于DIS报文
-                    //1.检查是否有占用者为发送主机的 IP 地址：
-                    //若有，则选取该 IP 地址；
-                    //若没有，则选取最小的状态为未分配的 IP 地址；
-                    //若没有，则选取最小的状态为过期的 IP 地址；
-                    //若没有，则不处理该报文，处理结束；
-                    
-                    
-                    
-                    //对于dis报文来说，ip即使不为0也当作0来处理
-                    int select_ip;
-                    if(have[from_int]) select_ip=have[from_int];
-                    else select_ip=return_ip();
-                    if(select_ip==-1) continue;
-
-                    //找到了要分配的那个ip地址
-                    //2.将该 IP 地址状态设置为待分配，占用者设置为发送主机；
-                    IP[select_ip].stage=1;
-                    IP[select_ip].is_belong=from_int;
-                    have[from_int]=select_ip;   //设置一下该客户端已经拥有了该ip
-
-                    //3.设置过期时刻，详见题目
-                    if(T_cur==0) IP[select_ip].expired_time=t+Tdef;
-                    else{
-                        if(T_cur<Tmin+t) T_cur=Tmin+t;
-                        if(T_cur>Tmax+t) T_cur=Tmax+t;
-                        IP[select_ip].expired_time=T_cur;
-                    }
-
-                    //4.向主机发送offer报文，ip、过期时刻
-                    cout<<Server<<" "<<from<<" OFR "<<select_ip<<" "<<IP[select_ip].expired_time<<endl;
-                }
-                
-                else if(comm==REQ){
-                    //向给客户端回应的服务器发送REQ的情况
-
-                    //对于REQ报文
-
-                    if(to!=Server){
-                    //1.检查接收主机是否为本机：
-                    //若不是，则找到占用者为发送主机的 所有 IP 地址，对于其中状态为 待分配的，将其状态设置为 未分配，并清空其占用者，清零其过期时刻，处理结束；
-                        if(have[from_int]){
-                            if(IP[have[from_int]].stage==1){
-                                IP[have[from_int]].stage=0;
-                                IP[have[from_int]].is_belong=0;
-                                IP[have[from_int]].expired_time=0;
-                                have[from_int]=0;
-                            }
-                        }
-                        continue;
-                    }
-                    if(ip_cur<=size_of_pool&&ip_cur>=1&&IP[ip_cur].is_belong==from_int){
-                        //2.检查报文中的 IP 地址是否在地址池内，且其占用者为发送主机，若不是，则向发送主机发送 Nak 报文，处理结束
-
-                        //3.无论该 IP 地址的状态为何，将该 IP 地址的状态设置为占用；
-                        IP[ip_cur].stage=2;
-
-                        //4.与 Discover 报文相同的方法，设置 IP 地址的过期时刻；
-                        if(T_cur==0) IP[ip_cur].expired_time=t+Tdef;
-                        else{
-                            if(T_cur<Tmin+t) T_cur=Tmin+t;
-                            if(T_cur>Tmax+t) T_cur=Tmax+t;
-                            IP[ip_cur].expired_time=T_cur;
-                        }
- 
-                        //5.向发送主机发送 Ack 报文
-                        cout<<Server<<" "<<from<<" ACK "<<ip_cur<<" "<<IP[ip_cur].expired_time<<endl;
-                    }else{
-                        cout<<Server<<" "<<from<<" NAK "<<ip_cur<<" "<<0<<endl;
-                        continue;
-                    }
-                }
-
-            }else continue;
-
-        }
-        
+    scanf("%d%d",&n,&m);
 
 
-        else if(comm==REQ){
-            if(to!=Server){
-                //1.检查接收主机是否为本机：
-                //若不是，则找到占用者为发送主机的 所有 IP 地址，对于其中状态为 待分配的，将其状态设置为 未分配，并清空其占用者，清零其过期时刻，处理结束；
-                if(have[from_int]){
-                    if(IP[have[from_int]].stage==1){
-                        IP[have[from_int]].stage=0;
-                        IP[have[from_int]].is_belong=0;
-                        IP[have[from_int]].expired_time=0;
-                        have[from_int]=0;
-                    }
-                }
-                continue;
-            }
-            if(ip_cur<=size_of_pool&&ip_cur>=1&&IP[ip_cur].is_belong==from_int){
-                //2.检查报文中的 IP 地址是否在地址池内，且其占用者为发送主机，若不是，则向发送主机发送 Nak 报文，处理结束
-
-                //3.无论该 IP 地址的状态为何，将该 IP 地址的状态设置为占用；
-                IP[ip_cur].stage=2;
-
-                //4.与 Discover 报文相同的方法，设置 IP 地址的过期时刻；
-                if(T_cur==0) IP[ip_cur].expired_time=t+Tdef;
-                else{
-                    if(T_cur<Tmin+t) T_cur=Tmin+t;
-                    if(T_cur>Tmax+t) T_cur=Tmax+t;
-                    IP[ip_cur].expired_time=T_cur;
-                }
- 
-                //5.向发送主机发送 Ack 报文
-                cout<<Server<<" "<<from<<" ACK "<<ip_cur<<" "<<IP[ip_cur].expired_time<<endl;
-            }else{
-                cout<<Server<<" "<<from<<" NAK "<<ip_cur<<" "<<0<<endl;
-                continue;
+    if(m==n-1){
+        //生成树的情况  用并查集来做
+        //最最特殊的情况2 骗了15'
+        int ans=n-1;
+        for(int i=1;i<=n;i++) father[i]=i;
+        for(int i=1;i<=m;i++){
+            int a,b,z;
+            scanf("%d%d%d",&a,&b,&z);
+            if(find_father(a)!=find_father(b)){
+                father[find_father(a)]=find_father(b);
+                ans--;
             }
         }
-        
-
-
-        else continue;
+        if(ans==0) printf("1");
+        else printf("0");
+        return 0;
     }
+
+    else{
+        //情况1 m<=18 m很小 可以用dfs遍历？
+        //我的想法是 把每个强连通分量独立出来
+        //每个强连通分量里边的边假设是n  则这里贡献了  *(1<<n)
+        //每两个强连通分量之间的边假设是m 则这里贡献了  *(1<<m)-1
+        //tarjan求强连通分量? 感觉不太好实现  用并查集应该更好一点?
+        //个人感觉 先快排再一次遍历不如遍历两次
+
+        //z=0表示该条边已经加入 z=1表示该条边等待加入
+        for(int i=1;i<=n;i++) father[i]=i;
+        int tot=0;
+        for(int i=1;i<=m;i++){
+            int a,b,z;
+            scanf("%d%d%d",&a,&b,&z);
+            if(z==0){
+                //这条边加入的情况 合并强连通分量
+                if(find_father(a)!=find_father(b)){
+                    father[find_father(a)]=find_father(b);
+                }
+            }else if(z==1){
+                //只存下来那些
+                tot++;
+                edge[tot].x=a;
+                edge[tot].y=b;
+            }
+        }
+        //tot是目前所有待加边的数量
+        if(tot==0) ans=0;
+        for(int i=1;i<=tot;i++){
+            int a=edge[i].x,b=edge[i].y;
+            int fa=find_father(a),fb=find_father(b);
+            if(fa==fb) ans=(ans*2)%mod;
+            else{
+                //把它所连接的强连通分量记录下来
+                //用二维矩阵存储肯定会爆炸 所以考虑用map存储
+
+                // 第一次尝试的时候只是单纯的考虑了每两个强连通分量之间能相连的都要相连
+                // 但是只要这些强连通分量能够构成生成树就行，没必要能连的都要连起来
+                // mark一下，忙完最近的事情考虑一下这个问题
+
+                auto tt=make_pair(fa,fb);
+                mm[tt]++;          
+            }
+            for(auto kk=mm.begin();kk!=mm.end();kk++){
+                ll temp=((1<<kk->second)-1)%mod;
+                ans=(ans*temp)%mod;
+            }
+        }
+        printf("%lld",ans);
+        return 0;        
+    }
+
+    return 0;
 }
