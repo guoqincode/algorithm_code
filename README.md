@@ -5,4 +5,5 @@ THU 为20年清华大学计算机系机试题目，个人能力有限，如果�
 
 FDU 为20年复旦大学计算机学院机试题目  
 
-欢迎21年cs保研同学交流，qguoxdu AT gmail dot com
+
+qguoxdu AT gmail dot com
