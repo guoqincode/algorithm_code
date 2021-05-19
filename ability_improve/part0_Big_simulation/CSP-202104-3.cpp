@@ -1,4 +1,11 @@
 //DHCP服务器
+//5.18 0->50->60
+
+//5.19 如果分配给一个client的IP过期了，之前的算法没有一个处理机制去处理过期的IP
+//所以才会造成e的NAK
+//60->70
+
+
 #include<bits/stdc++.h>
 using namespace std;
 int size_of_pool,Tdef,Tmax,Tmin,size_of_command;
@@ -48,6 +55,23 @@ int return_ip(){
 //2.分配给他最小的尚未  占用过(新的)  ip，否则
 //3.分配给他 此时未被占用的IP，如果没有，则拒绝分配
 
+inline void proce_time_come(int t){
+    //在时间t下处理过期的ip
+    for(int i=1;i<=size_of_pool;i++){
+        if(IP[i].stage==1||IP[i].stage==2){
+            //不是未分配状态的IP
+            if(t>=IP[i].expired_time){
+                //处于待分配和占用的ip有一个大于0的过期时刻。到达过期时刻时，若为待分配则变为未分配，占用者清0，过期时刻清0，否则占用->过期，过期时刻清0
+                IP[i].expired_time=0;
+                if(IP[i].stage==1){
+                    IP[i].is_belong=0;
+                    IP[i].stage=0;
+                }else if(IP[i].stage==2) IP[i].stage=3;
+            }
+        }
+    }
+}
+
 int main(){
     cin>>size_of_pool>>Tdef>>Tmax>>Tmin>>Server>>size_of_command;
     while(size_of_command--){
@@ -55,6 +79,11 @@ int main(){
         int t,ip_cur,T_cur;
         string from,to,comm;
         cin>>t>>from>>to>>comm>>ip_cur>>T_cur;
+
+        //5.19 可以在这里查找是否存在过期的IP  引入的开销 O(size_of_command  *  size_of_pool  *  n^2)
+
+        proce_time_come(t);
+
         if(from==all||from==Server) continue;
         if(m[from]==0){
             //之前没有记录过这个主机
