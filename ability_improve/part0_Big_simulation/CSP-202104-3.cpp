@@ -5,6 +5,7 @@
 //所以才会造成e的NAK
 //60->70
 
+//5.22 70->90 过期时刻的ip拥有者 的have清0
 
 #include<bits/stdc++.h>
 using namespace std;
@@ -64,6 +65,9 @@ inline void proce_time_come(int t){
                 //处于待分配和占用的ip有一个大于0的过期时刻。到达过期时刻时，若为待分配则变为未分配，占用者清0，过期时刻清0，否则占用->过期，过期时刻清0
                 IP[i].expired_time=0;
                 if(IP[i].stage==1){
+
+                    have[IP[i].is_belong]=0;  //占用者清0
+
                     IP[i].is_belong=0;
                     IP[i].stage=0;
                 }else if(IP[i].stage==2) IP[i].stage=3;
@@ -115,8 +119,18 @@ int main(){
                     
                     //对于dis报文来说，ip即使不为0也当作0来处理
                     int select_ip;
-                    if(have[from_int]) select_ip=have[from_int];
+                    if(have[from_int]){
+
+                        //找到bug了！！！ have[from_int]没有清楚！
+                        // cout<<endl<<"HI!"<<endl;
+                        select_ip=have[from_int];
+                    }
                     else select_ip=return_ip();
+                    // if(t==16){
+                    //     //进入错误
+
+                    //     cout<<endl<<IP[select_ip].expired_time<<" "<<IP[select_ip].is_belong<<" "<<IP[select_ip].stage<<" "<<select_ip<<endl;
+                    // } 
                     if(select_ip==-1) continue;
 
                     //找到了要分配的那个ip地址
