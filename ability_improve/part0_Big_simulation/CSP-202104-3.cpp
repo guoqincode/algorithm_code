@@ -7,6 +7,8 @@
 
 //5.22 70->90 过期时刻的ip拥有者 的have清0
 
+//5.23 90->100 如果have[]有，判断对应的ip是否已经被别人占用
+
 #include<bits/stdc++.h>
 using namespace std;
 int size_of_pool,Tdef,Tmax,Tmin,size_of_command;
@@ -119,11 +121,12 @@ int main(){
                     
                     //对于dis报文来说，ip即使不为0也当作0来处理
                     int select_ip;
-                    if(have[from_int]){
+                    if(have[from_int]&&IP[have[from_int]].is_belong==from_int){
 
                         //找到bug了！！！ have[from_int]没有清楚！
                         // cout<<endl<<"HI!"<<endl;
                         select_ip=have[from_int];
+                        
                     }
                     else select_ip=return_ip();
                     // if(t==16){
