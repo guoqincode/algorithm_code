@@ -98,6 +98,26 @@ inline int my_create(string path,int in_size){
     return 1;
 }
 
+inline void my_delete_dfs(int id){
+    //如果是目录的话，移除该目录及其所有后代文件
+    if(file[id].sons.empty()){
+        //如果当前文件没有子节点了，那么他就可以删除了
+        string temp = file[id].name;
+        //向他的父节点删除他
+        int fa = file[id].father;
+        for(vector<int>::iterator it = file[fa].sons.begin(); it!=file[fa].sons.end(); it++){
+            if(*it==id){
+                file[fa].sons.erase(it);
+                break;
+            }
+        }
+        mp[temp] = 0;
+    }
+    for(int i=0;i<file[id].sons.size();i++){
+        my_delete_dfs(file[id].sons[i]);
+    }
+}
+
 inline void my_delete(string path){
     //3.在上述过程中被移除的目录（如果有）上设置的配额值也被移除
     //4.该指令始终认为能执行成功
@@ -106,7 +126,21 @@ inline void my_delete(string path){
     if(mp[path]==0) return;
 
     //2.若该路径所指的文件是目录，则移除该目录及其所有后代文件
-    
+    int id = mp[path];
+    if(file[id].is_file){
+        //如果是文件的话，删除它，并且考虑上层目录中删除
+        int fa=file[id].father;
+        for(vector<int>::iterator it = file[fa].sons.begin(); it!=file[fa].sons.end(); it++){
+            if(*it==id){
+                file[fa].sons.erase(it);
+                break;
+            }
+        }
+        mp[path]=0;
+    }else{
+        //如果是目录的话，移除该目录及其所有后代文件
+        my_delete_dfs(id);
+    }
 }
 
 inline void my_q(string path,int ld,int lr){
@@ -118,6 +152,7 @@ inline void my_q(string path,int ld,int lr){
 
 int count_of_commands;
 int main(){
+    vector<char>ans;
     file[0].name="/";
     cin>>count_of_commands;
     char comm;
@@ -139,4 +174,5 @@ int main(){
             my_q(path,ld,lr);
         }
     }
+    return 0;
 }
