@@ -19,7 +19,7 @@ const int maxn = 1e5+10;
 
 struct FiLe{
     string name;
-    vector <int> sons;  //后代的编号
+    unordered_set <int> sons;  //后代的编号
     int father; //父节点的编号 假设根目录为0
     int is_file; //0代表为目录 1代表为文件
     ll size_file;  //如果是文件，那么他当前的大小  
@@ -67,7 +67,7 @@ inline int my_create(string path,int in_size){
                 //如果这个目录原本不存在
                 tot++;
                 mp[temp] = tot;
-                file[fa].sons.push_back(tot);
+                file[fa].sons.insert(tot);
                 file[tot].father=fa;
                 file[tot].name = temp; 
 
@@ -88,7 +88,7 @@ inline int my_create(string path,int in_size){
     //处理完毕 现在要处理最后一个文件了
     tot++;
     mp[path] = tot;
-    file[fa].sons.push_back(tot);
+    file[fa].sons.insert(tot);
     file[tot].father=fa;
     file[tot].is_file=1;
     file[tot].name=path;
@@ -98,48 +98,80 @@ inline int my_create(string path,int in_size){
     return 1;
 }
 
-inline void my_delete_dfs(int id){
-    //如果是目录的话，移除该目录及其所有后代文件
-    if(file[id].sons.empty()){
-        //如果当前文件没有子节点了，那么他就可以删除了
-        string temp = file[id].name;
-        //向他的父节点删除他
-        int fa = file[id].father;
-        for(vector<int>::iterator it = file[fa].sons.begin(); it!=file[fa].sons.end(); it++){
-            if(*it==id){
-                file[fa].sons.erase(it);
-                break;
-            }
-        }
-        mp[temp] = 0;
+// inline void my_delete_dfs(int id){
+//     //如果是目录的话，移除该目录及其所有后代文件
+//     if(file[id].sons.empty()){
+//         //如果当前文件没有子节点了，那么他就可以删除了
+//         string temp = file[id].name;
+//         //向他的父节点删除他
+//         int fa = file[id].father;
+//         for(vector<int>::iterator it = file[fa].sons.begin(); it!=file[fa].sons.end(); it++){
+//             if(*it==id){
+//                 file[fa].sons.erase(it);
+//                 break;
+//             }
+//         }
+//         mp[temp] = 0;
+//     }
+//     for(int i=0;i<file[id].sons.size();i++){
+//         my_delete_dfs(file[id].sons[i]);
+//     }
+// }
+
+// inline void my_delete(string path){
+//     //3.在上述过程中被移除的目录（如果有）上设置的配额值也被移除
+//     //4.该指令始终认为能执行成功
+
+//     //1.若该路径所指的文件不存在，则不进行任何操作
+//     if(mp[path]==0) return;
+
+//     //2.若该路径所指的文件是目录，则移除该目录及其所有后代文件
+//     int id = mp[path];
+//     if(file[id].is_file){
+//         //如果是文件的话，删除它，并且考虑上层目录中删除
+//         int fa=file[id].father;
+//         for(vector<int>::iterator it = file[fa].sons.begin(); it!=file[fa].sons.end(); it++){
+//             if(*it==id){
+//                 file[fa].sons.erase(it);
+//                 break;
+//             }
+//         }
+//         mp[path]=0;
+//     }else{
+//         //如果是目录的话，移除该目录及其所有后代文件
+//         my_delete_dfs(id);
+//     }
+// }
+
+inline void my_delete_dfs(string path){
+    int id = mp[path];
+    for(auto it = file[id].sons.begin(); it!=file[id].sons.end(); it++){
+        my_delete_dfs(file[*it].name);
+        // mp[file[*it].name] = 0;
+        // file[id].sons.erase(*it);
     }
-    for(int i=0;i<file[id].sons.size();i++){
-        my_delete_dfs(file[id].sons[i]);
-    }
+    int fa = file[id].father;
+    mp[path] = 0;
+    file[fa].sons.erase(id);
 }
 
 inline void my_delete(string path){
-    //3.在上述过程中被移除的目录（如果有）上设置的配额值也被移除
-    //4.该指令始终认为能执行成功
 
     //1.若该路径所指的文件不存在，则不进行任何操作
-    if(mp[path]==0) return;
+    if(mp[path] == 0) return;
 
-    //2.若该路径所指的文件是目录，则移除该目录及其所有后代文件
     int id = mp[path];
     if(file[id].is_file){
-        //如果是文件的话，删除它，并且考虑上层目录中删除
-        int fa=file[id].father;
-        for(vector<int>::iterator it = file[fa].sons.begin(); it!=file[fa].sons.end(); it++){
-            if(*it==id){
-                file[fa].sons.erase(it);
-                break;
-            }
-        }
-        mp[path]=0;
+        //如果是文件的话，删除它，并且考虑删除上层目录中sons对应的节点
+        int fa = file[id].father;
+        file[fa].sons.erase(id);
+        mp[path] = 0;
     }else{
-        //如果是目录的话，移除该目录及其所有后代文件
-        my_delete_dfs(id);
+        //如果是目录的话
+        my_delete_dfs(path);
+        // int fa = file[id].father;
+        // file[fa].sons.erase(id);
+        // mp[path] = 0;
     }
 }
 
