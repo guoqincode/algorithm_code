@@ -1,5 +1,6 @@
 //带 配额 的文件系统
 #include<bits/stdc++.h>
+#include<unordered_set>
 using namespace std;
 #define ll long long
 const int maxn = 1e5+10;
@@ -58,6 +59,16 @@ inline int my_create(string path,int in_size){
         }
     }
 
+    for(int i=0;i<path.size();i++){
+        if(path[i]=='/'){
+            string temp = path.substr(0,i);
+            if(mp[temp]){
+                int cur = mp[temp];
+                if(file[cur].is_file) return 0;
+            }
+        }
+    }
+
     int fa=0;
     for(int i=1;i<path.size();i++){
         if(path[i]=='/'){
@@ -75,12 +86,12 @@ inline int my_create(string path,int in_size){
 
             }else{
                 //如果此时已经存在该文件或者目录
-                int cur = mp[temp];
-                if(file[cur].is_file){
-                    //4.2若要创建目录与已有的同一双亲目录下的孩子文件中的普通文件名称重复，则不能执行
-                    // cout<<'N'<<endl;
-                    return 0;
-                }
+                // int cur = mp[temp];
+                // if(file[cur].is_file){
+                //     //4.2若要创建目录与已有的同一双亲目录下的孩子文件中的普通文件名称重复，则不能执行
+                //     // cout<<'N'<<endl;
+                //     return 0;
+                // }
                 fa = mp[temp];
             }
         }
@@ -145,7 +156,8 @@ inline int my_create(string path,int in_size){
 
 inline void my_delete_dfs(string path){
     int id = mp[path];
-    for(auto it = file[id].sons.begin(); it!=file[id].sons.end(); it++){
+    if(id==0) return;   //bug1
+    for(unordered_set<int>::iterator it = file[id].sons.begin(); it!=file[id].sons.end(); it++){
         my_delete_dfs(file[*it].name);
         // mp[file[*it].name] = 0;
         // file[id].sons.erase(*it);
@@ -193,6 +205,7 @@ int main(){
     int ld,lr;
     while(count_of_commands--){
         cin>>comm;
+
         if(comm=='C'){
             cin>>path>>in_size;
             if(my_create(path,in_size)) cout<<'Y'<<endl;
