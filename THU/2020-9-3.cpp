@@ -98,10 +98,12 @@ int main(){
         for(int j=1;j<=m;j++){
             // (i,j) - (i+1,j)
             cin>>cost_j;
-            addedge((i-1)*m+j,i*m+j,cost_i);
-            addedge(i*m+j,(i-1)*m+j,cost_i);
+            addedge((i-1)*m+j,i*m+j,cost_j);
+            addedge(i*m+j,(i-1)*m+j,cost_j);
         }
     }
+
+    // cout<<"here"<<endl;
 
     if(x==1){
         //进入子任务 1，3，4  57'
@@ -109,11 +111,12 @@ int main(){
             //进入子任务1     13'
             //一个发电站和一个工厂 求单个发电站到单个工厂的最短距离
             int ans = spfa(fadian[1],factory[1]);
-            cout<<ans<<endl;
 
             int cur_x,cur_y;
             slove_x_y(fadian[1],cur_x,cur_y);
             ans+=g[cur_x][cur_y];
+            cout<<ans<<endl;
+
             return 0;
         }else if(y==2){
             //进入子任务3 y=2 21'  两种情况-->考虑错了orz
