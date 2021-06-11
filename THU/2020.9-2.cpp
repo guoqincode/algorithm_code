@@ -24,24 +24,27 @@
 #include<bits/stdc++.h>
 using namespace std;
 int n,m,w,d;
-const int maxn=101,maxm=3*1e4+5,maxw=3*1e4+5,maxd=1000;
+const int maxn=101,maxm=3*1e4+5;
 char op;
-int R_W[maxw],W_W[maxn];
+int R_W[maxn],W_W[maxn];
 
 struct Node{
     int cur_data_t;   //目前的数据是哪个时间点留下的  用来判断是否是相同的数据
     int is_writing;   //1 正在被写入 
     int writing_done_t; //如果正在被写入，那么写入完成的时间是多少
+    int next_data;  //下一个要写入的值
 }node[maxn];
 
 int vis[maxn];
 inline void Read(int t){
+
+
     memset(vis,0,sizeof(vis));
     //首先处理一下这个时间节点是否有节点被写入完成
     for(int i=1;i<=n;i++){
         if(node[i].is_writing){
             if(t>=node[i].writing_done_t){
-                node[i].cur_data_t = node[i].writing_done_t;
+                node[i].cur_data_t = node[i].next_data;
                 node[i].is_writing=0;
             }
         }
@@ -53,16 +56,22 @@ inline void Read(int t){
     for(int i=1;i<=w;i++){
         temp = max(temp,node[R_W[i]].cur_data_t);   //找到最大的数据
     }
+    // if(t==9) cout<<endl<<temp<<endl;
     int couunt=0;
     for(int i=1;i<=w;i++){
+        vis[R_W[i]]=1;
         if(temp!=node[R_W[i]].cur_data_t){
             flag=0;
             //不是最新的话 就要修正
+            if(node[R_W[i]].is_writing&&node[R_W[i]].next_data==temp) continue; //重复写入相同数据
             node[R_W[i]].is_writing=1;
             node[R_W[i]].writing_done_t=t+d;
+            node[R_W[i]].next_data=temp;
         }else couunt++;
-        vis[R_W[i]]=1;
+        
     }
+
+    // if(t==9) cout<<endl<<couunt<<endl;
     if(flag==1){
         //w个数据全部相同
         cout<<couunt<<" "<<temp<<endl;
@@ -82,8 +91,10 @@ inline void Read(int t){
                     return;
                 }
             }else{
+                if(node[R_W[i]].is_writing&&node[R_W[i]].next_data==temp) continue; //重复写入相同数据
                 node[i].is_writing=1;
                 node[i].writing_done_t=t+d;
+                node[i].next_data=temp;
             }
         }
     }
@@ -97,7 +108,7 @@ inline void Write(int t,int k){
     for(int i=1;i<=n;i++){
         if(node[i].is_writing){
             if(t>=node[i].writing_done_t){
-                node[i].cur_data_t = node[i].writing_done_t;
+                node[i].cur_data_t = node[i].next_data;
                 node[i].is_writing=0;
             }
         }
@@ -107,6 +118,7 @@ inline void Write(int t,int k){
     for(int i=1;i<=k;i++){
         node[W_W[i]].is_writing=1;
         node[W_W[i]].writing_done_t=t+d;
+        node[W_W[i]].next_data=t+d;
     }
     // cout<<k<<" "<<t+d<<endl;
     return;
