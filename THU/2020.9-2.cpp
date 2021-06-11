@@ -108,7 +108,7 @@ inline void Write(int t,int k){
         node[W_W[i]].is_writing=1;
         node[W_W[i]].writing_done_t=t+d;
     }
-    cout<<k<<" "<<t+d<<endl;
+    // cout<<k<<" "<<t+d<<endl;
     return;
 }
 
