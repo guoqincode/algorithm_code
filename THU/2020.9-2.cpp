@@ -12,12 +12,10 @@
 //-->读操作也可能产生更新操作
 //输出：最新成功提交的数据版本t和访问的机器数目v,立刻输出
 
-
 //W t k x1,x2 ... xk 表示在t时间更新了k台机器，k>=w
 //  *写入数据需要d时长，所以R t，W t中的更新操作要在t+d时间内才能访问到
 //  *如果同一时间对某节点写入不同数据，只有最新的才会被写入
 //输出：输出该数据写入完成的时间和访问的机器数目，有d时长的执行延迟
-
 
 //保证对于同一时间，可能会有多个读请求，但是只会有一个写请求
 
@@ -31,9 +29,88 @@ char op;
 int R_W[maxw],W_W[maxn];
 
 struct Node{
-    int cur_data;   //目前的数据是哪个时间点留下的
-    
+    int cur_data_t;   //目前的数据是哪个时间点留下的  用来判断是否是相同的数据
+    int is_writing;   //1 正在被写入 
+    int writing_done_t; //如果正在被写入，那么写入完成的时间是多少
 }node[maxn];
+
+int vis[maxn];
+inline void Read(int t){
+    memset(vis,0,sizeof(vis));
+    //首先处理一下这个时间节点是否有节点被写入完成
+    for(int i=1;i<=n;i++){
+        if(node[i].is_writing){
+            if(t>=node[i].writing_done_t){
+                node[i].cur_data_t = node[i].writing_done_t;
+                node[i].is_writing=0;
+            }
+        }
+    }
+    //节点更新完成
+    //首先确认这w个数据是否相同
+    int flag=1;
+    int temp = node[R_W[1]].cur_data_t;
+    for(int i=1;i<=w;i++){
+        temp = max(temp,node[R_W[i]].cur_data_t);   //找到最大的数据
+    }
+    int couunt=0;
+    for(int i=1;i<=w;i++){
+        if(temp!=node[R_W[i]].cur_data_t){
+            flag=0;
+            //不是最新的话 就要修正
+            node[R_W[i]].is_writing=1;
+            node[R_W[i]].writing_done_t=t+d;
+        }else couunt++;
+        vis[R_W[i]]=1;
+    }
+    if(flag==1){
+        //w个数据全部相同
+        cout<<couunt<<" "<<temp<<endl;
+        return ;
+    }
+    //如果只有couunt(<w)个数据相同
+    int has_visted=w;   //当前一共访问了has_visted个主机，有couunt个数据相同，当有w个数据相同时，跳出
+    for(int i=1;i<=n;i++){
+        if(!vis[i]){
+            vis[i]=1;
+            has_visted++;
+            //如果没有访问过的话
+            if(temp==node[i].cur_data_t){
+                couunt++;
+                if(couunt==w){
+                    cout<<has_visted<<" "<<temp<<endl;
+                    return;
+                }
+            }else{
+                node[i].is_writing=1;
+                node[i].writing_done_t=t+d;
+            }
+        }
+    }
+    cout<<has_visted<<" "<<temp<<endl;
+    return;
+}
+
+inline void Write(int t,int k){
+    //在时间t下 更新k个数据
+    //首先处理一下这个时间节点是否有节点被写入完成
+    for(int i=1;i<=n;i++){
+        if(node[i].is_writing){
+            if(t>=node[i].writing_done_t){
+                node[i].cur_data_t = node[i].writing_done_t;
+                node[i].is_writing=0;
+            }
+        }
+    }
+    //节点更新完成
+
+    for(int i=1;i<=k;i++){
+        node[W_W[i]].is_writing=1;
+        node[W_W[i]].writing_done_t=t+d;
+    }
+    cout<<k<<" "<<t+d<<endl;
+    return;
+}
 
 int main(){
     ios::sync_with_stdio(false);
@@ -44,17 +121,16 @@ int main(){
         if(op=='R'){
             cin>>t;
             for(int i=1;i<=w;i++) cin>>R_W[i];
-
             //read fuction
-
+            Read(t);
         }else if(op=='W'){
             cin>>t;
             int k;
             cin>>k;
             for(int i=1;i<=k;i++) cin>>W_W[i];
-
+            Write(t,k);
             //write fuction
-
         }
     }
+    return 0;
 }
